@@ -1,9 +1,10 @@
 import 'package:ecommerce/auth/login.dart';
 import 'package:ecommerce/onboard/onboardContent.dart';
 import 'package:ecommerce/widgets/widget_support.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+final currentonboardindex = StateProvider<int>((ref) => 0);
 
 // ignore: camel_case_types
 class onboard extends StatefulWidget {
@@ -15,7 +16,7 @@ class onboard extends StatefulWidget {
 
 // ignore: camel_case_types
 class _onboardState extends State<onboard> {
-  int currentIndex = 0;
+  // int currentIndex = 0;
   late PageController _controller;
   @override
   void initState() {
@@ -25,84 +26,108 @@ class _onboardState extends State<onboard> {
 
   @override
   void dispose() {
-    _controller.dispose(); 
+    _controller.dispose();
     super.dispose();
   }
+
   @override
   Widget build(BuildContext context) {
+    print('rebuildonboard');
     return Scaffold(
-      body: Column(
-        children: [
-          const SizedBox(
-            height: 80,
-          ),
-          Expanded(
-            child: PageView.builder(
-              itemCount: Content.length,
-              controller: _controller,
-              onPageChanged: (int value){
-                setState(() {
-                  currentIndex = value;
-                });
-              },
-              itemBuilder: (_,index){
-                return  Padding(
-                  padding: const EdgeInsets.all(20),
-                  child: Column(
-                    children: [
-                      Image.asset(Content[index].image, height: 300, width: MediaQuery.of(context).size.width/1.5, fit: BoxFit.cover,),
-                     const SizedBox(
-                        height: 40,
+      body: Consumer(builder: (context, ref, child) {
+        int currentIndex = ref.watch(currentonboardindex) ;
+        return Column(
+          children: [
+            const SizedBox(
+              height: 80,
+            ),
+            Expanded(
+              child: PageView.builder(
+                  itemCount: Content.length,
+                  controller: _controller,
+                  onPageChanged: (int value) {
+                    ref.read(currentonboardindex.notifier).state = value;
+                    // setState(() {
+                    //   currentIndex = value;
+                    // });
+                  },
+                  itemBuilder: (_, index) {
+                    return Padding(
+                      padding: const EdgeInsets.all(20),
+                      child: Column(
+                        children: [
+                          Image.asset(
+                            Content[index].image,
+                            height: 300,
+                            width: MediaQuery.of(context).size.width / 1.5,
+                            fit: BoxFit.cover,
+                          ),
+                          const SizedBox(
+                            height: 40,
+                          ),
+                          Text(
+                            Content[index].title,
+                            style: Appwidgets.semiboldtextstyel(),
+                          ),
+                          Text(
+                            Content[index].description,
+                            style: Appwidgets.lighttextstyle(),
+                          ),
+                        ],
                       ),
-                      Text(Content[index].title, style: Appwidgets.semiboldtextstyel(),),
-                      Text(Content[index].description, style: Appwidgets.lighttextstyle(),),
-                    ],
-                  ),
-                );
-              }),
-          ),
-      
+                    );
+                  }),
+            ),
+
             // ignore: avoid_unnecessary_containers
             Container(
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: List.generate(Content.length, (index) => buildot(context, index))
-              ),
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: List.generate(
+                      Content.length,
+                      (index) => Container(
+                            margin: const EdgeInsets.all(3),
+                            height: 10,
+                            width: currentIndex == index ? 18 : 7,
+                            decoration: BoxDecoration(
+                              color: Colors.black,
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                          ))),
             ),
-      
+
             GestureDetector(
-              onTap: (){
-                if(currentIndex == Content.length-1){
-                  Navigator.pushReplacement(context, MaterialPageRoute(builder: (context)=> const login()));
-                  _controller.nextPage(duration: const Duration(milliseconds: 100), curve: Curves.bounceIn);
+              onTap: () {
+                if (currentIndex == Content.length - 1) {
+                  Navigator.pushReplacement(context,
+                      MaterialPageRoute(builder: (context) => const login()));
+                  _controller.nextPage(
+                      duration: const Duration(milliseconds: 100),
+                      curve: Curves.bounceIn);
                 }
               },
-              child:currentIndex == Content.length-1 ? Container(
-                margin: const EdgeInsets.all(40),
-                height: 60,
-                width: double.infinity,
-                decoration: BoxDecoration(
-                  color:const  Color(0xFFff5c30),
-                  borderRadius: BorderRadius.circular(13)
-                ),
-                child: 
-                 const Center(child:  Text('start', style: TextStyle(color: Colors.white, fontFamily: 'Poppins', fontSize: 20),)) 
-        
-              ) : const SizedBox(),
+              child: currentIndex == Content.length - 1
+                  ? Container(
+                      margin: const EdgeInsets.all(40),
+                      height: 60,
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                          color: const Color(0xFFff5c30),
+                          borderRadius: BorderRadius.circular(13)),
+                      child: const Center(
+                          child: Text(
+                        'start',
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontFamily: 'Poppins',
+                            fontSize: 20),
+                      )))
+                  : const SizedBox(),
             )
-        ],
-      ),
+          ],
+        );
+      }),
     );
   }
-Container buildot(BuildContext context, int index){
-  return Container(
-    margin: EdgeInsets.all(3),
-    height: 10,
-    width:  currentIndex == index ? 18 : 7,
-    decoration: BoxDecoration(
-      color: Colors.black,
-      borderRadius: BorderRadius.circular(10),
-    ),
-  );
-}
+
 }
